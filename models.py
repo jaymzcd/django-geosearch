@@ -73,7 +73,7 @@ class ZipCodeEntry(models.Model):
             + math.pi) % (2*math.pi)) - math.pi
 
     @staticmethod
-    def within_radius(_zipcode, radius=5):
+    def within_radius(_zipcode, radius=5.0):
         """ Takes an input zip & desired radius, works out the square
         (not circular) boundry box for it and returns the zip codes
         which fall within it. The method itself is outlined here:
@@ -91,7 +91,19 @@ class ZipCodeEntry(models.Model):
         than the "true" size. This can be further filtered on thesclient
         side or in the views rather than creating a complicated
         query. For most searches it's probably not a major problem
-        in any case. """
+        in any case.
+
+        Returns a list of distances & zipcodes increasingly far from
+        our request point, eg:
+
+        Out[21]:
+            [{'distance': 0.0, 'zipcode': u'19095'},
+            {'distance': 1.2884269683162199, 'zipcode': u'19027'},
+            {'distance': 1.3869975824126934, 'zipcode': u'19150'},
+            {'distance': 1.7610972939806755, 'zipcode': u'19038'},
+            ...
+            ]
+        """
 
         # These are our 4 points (N/S/E/W) We use this to build a bounding box
         HEADINGS = enumerate([0, math.pi/2, math.pi, 3*math.pi/2])
@@ -124,6 +136,8 @@ class ZipCodeEntry(models.Model):
             code_data.append(dict(zipcode=code.zipcode, \
                 distance=code.distance_to_latlong((zipcode.latitude, zipcode.longitude)))
             )
-
-        return code_data
+        code_data.sort() # return orderd by distance
+        # now fix the bounding box SQL to limit within our radius
+        sorted_data = [elem for elem in code_data if elem['distance']<radius]
+        return sorted_data
 
