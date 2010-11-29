@@ -17,8 +17,15 @@ class GeoEntry(models.Model):
     object_id = models.PositiveIntegerField(blank=True, null=True)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
+    class Meta:
+        unique_together = ('content_type', 'object_id')
+
+    @property
+    def lat_long(self):
+        return '(%s, %s)' % (self.latitude, self.longitude)
+    
     def __unicode__(self):
-        return self.zipcode
+        return self.lat_long
 
     def distance_to_latlong(self, latlong):
         """ Returns the distance (in miles) of a zipcode's lat/long to
@@ -127,8 +134,8 @@ class GeoEntry(models.Model):
 
         entry_data = list()
         for entry in entries:
-            entry_data.append(dict(zipcode=code.zipcode, \
-                distance=code.distance_to_latlong((zipcode.latitude, zipcode.longitude)))
+            entry_data.append(dict(zipcode=entry.object_id, \
+                distance=entry.distance_to_latlong((latlong[0], latlong[1])))
             )
         entry_data.sort() # return orderd by distance
         # now fix the bounding box SQL to limit within our radius
