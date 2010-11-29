@@ -76,8 +76,8 @@ class GeoEntry(models.Model):
 
     @staticmethod
     def within_radius(latlong, radius=5.0):
-        """ Takes an input zip & desired radius, works out the square
-        (not circular) boundry box for it and returns the zip codes
+        """ Takes an input latlong & desired radius, works out the square
+        (not circular) boundry box for it and returns the object id's
         which fall within it. The method itself is outlined here:
             http://www.codeproject.com/KB/cs/zipcodeutil.aspx
 
@@ -95,16 +95,8 @@ class GeoEntry(models.Model):
         query. For most searches it's probably not a major problem
         in any case.
 
-        Returns a list of distances & zipcodes increasingly far from
-        our request point, eg:
-
-        Out[21]:
-            [{'distance': 0.0, 'zipcode': u'19095'},
-            {'distance': 1.2884269683162199, 'zipcode': u'19027'},
-            {'distance': 1.3869975824126934, 'zipcode': u'19150'},
-            {'distance': 1.7610972939806755, 'zipcode': u'19038'},
-            ...
-            ]
+        Returns a list of distances increasingly far from
+        our request point.
         """
 
         # These are our 4 points (N/S/E/W) We use this to build a bounding box
