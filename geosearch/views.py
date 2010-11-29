@@ -24,7 +24,7 @@ def lookup(request):
     else:
         return HttpResponse(json.dumps({'error': 'BadRequest'}))
     if lat_long:
-        z = GeoEntry.within_radius(lat_long, radius=250)
+        z = GeoEntry.within_radius(lat_long, radius=500)
         return HttpResponse(json.dumps(z, sort_keys=False, indent=4))
     else:
         return HttpResponse(json.dumps({'error': 'NoRequest'}))

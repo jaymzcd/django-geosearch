@@ -82,7 +82,7 @@ class GeoEntry(models.Model):
             + math.pi) % (2*math.pi)) - math.pi
 
     @staticmethod
-    def within_radius(latlong, radius=5.0):
+    def within_radius(latlong, radius=5.0, ctype_fields=['name',]):
         """ Takes an input latlong & desired radius, works out the square
         (not circular) boundry box for it and returns the object id's
         which fall within it. The method itself is outlined here:
@@ -103,17 +103,17 @@ class GeoEntry(models.Model):
         in any case.
 
         Returns a list of distances increasingly far from
-        our request point.
+        our request point along with the content object
         """
 
         # These are our 4 points (N/S/E/W) We use this to build a bounding box
         HEADINGS = enumerate([0, math.pi/2, math.pi, 3*math.pi/2])
 
         try:
-            zipcode = GeoEntry.objects.get(latitude=latlong[0], longitude=latlong[1])
+            geoentry = GeoEntry.objects.get(latitude=latlong[0], longitude=latlong[1])
         except GeoEntry.DoesNotExist:
             # Maybe handle more gracefully?
-            raise Exception('No zipcode matching query')
+            raise Exception('No GeoEntry matching query')
 
         source_lat = GeoEntry.degrees_to_radians(latlong[0])
         source_long = GeoEntry.degrees_to_radians(latlong[1])
@@ -134,8 +134,15 @@ class GeoEntry(models.Model):
 
         entry_data = list()
         for entry in entries:
-            entry_data.append(dict(zipcode=entry.object_id, \
-                distance=entry.distance_to_latlong((latlong[0], latlong[1])))
+            obj = entry.content_object
+            if obj:
+                ctype_dict = dict([[field, getattr(obj, field)] for field in ctype_fields])
+            else:
+                ctype_dict = dict(object_id=entry.object_id, content_type=entry.content_type.name)
+            entry_data.append(dict(
+                    distance=entry.distance_to_latlong((latlong[0], latlong[1])),
+                    object_data=ctype_dict,
+                )
             )
         entry_data.sort() # return orderd by distance
         # now fix the bounding box SQL to limit within our radius
