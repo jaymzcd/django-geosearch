@@ -33,7 +33,9 @@ JSON formatted like this:
         }
     ]
 
-You can customise the fields returned by providing a *fields* parameter, comma separated:
+You can customise the fields returned by providing a *fields* parameter, comma
+separated. A shorthand of "all" will return all the data via the content objects
+*_meta.fields* attribute. For example:
 
     http://localhost:8000/geosearch/?latitude=51.5&longitude=0&radius=500&fields=pk,name
 

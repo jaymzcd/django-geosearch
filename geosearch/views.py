@@ -29,6 +29,9 @@ def get_params(request, var='POST'):
 
 
 def lookup(request):
+    """ Simple view to return a JSON array with content data via a
+    GET or POST request """
+
     if request.POST:
         lat_long, radius, fields = get_params(request)
     elif request.GET:

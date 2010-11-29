@@ -103,7 +103,10 @@ class GeoEntry(models.Model):
         in any case.
 
         Returns a list of distances increasingly far from
-        our request point along with the content object
+        our request point along with the content object's primary key
+        and type for use in further lookups. By passing through a list
+        of fields you can optionally get more data back. The returned
+        array is ideally suited as being returned as JSON.
         """
 
         # These are our 4 points (N/S/E/W) We use this to build a bounding box
@@ -137,7 +140,10 @@ class GeoEntry(models.Model):
             obj = entry.content_object
             ctype_dict = None,
             if obj and ctype_fields:
-                ctype_dict = dict([[field, getattr(obj, field)] for field in ctype_fields])
+                if (len(ctype_fields)==1 and ctype_fields[0]=='all'):
+                    ctype_dict = dict([[field.name, repr(getattr(obj, field.name))] for field in obj._meta.fields])
+                else:
+                    ctype_dict = dict([[field, repr(getattr(obj, field))] for field in ctype_fields])
             entry_data.append(dict(
                     distance=entry.distance_to_latlong((latlong[0], latlong[1])),
                     content_type=entry.content_type.pk,
