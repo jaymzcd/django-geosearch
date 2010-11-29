@@ -11,10 +11,6 @@ class GeoEntry(models.Model):
 
     latitude = models.DecimalField(decimal_places=6, max_digits=9)
     longitude = models.DecimalField(decimal_places=6, max_digits=9)
-    city_name = models.CharField(max_length=25)
-    state = models.CharField(max_length=2)
-    county = models.CharField(max_length=25)
-    format = models.CharField(max_length=50)
 
     # Our generic binding
     content_type = models.ForeignKey(ContentType, blank=True, null=True) 
@@ -79,7 +75,7 @@ class GeoEntry(models.Model):
             + math.pi) % (2*math.pi)) - math.pi
 
     @staticmethod
-    def within_radius(_zipcode, radius=5.0):
+    def within_radius(latlong, radius=5.0):
         """ Takes an input zip & desired radius, works out the square
         (not circular) boundry box for it and returns the zip codes
         which fall within it. The method itself is outlined here:
@@ -115,13 +111,13 @@ class GeoEntry(models.Model):
         HEADINGS = enumerate([0, math.pi/2, math.pi, 3*math.pi/2])
 
         try:
-            zipcode = GeoEntry.objects.get(zipcode=_zipcode)
+            zipcode = GeoEntry.objects.get(latitude=latlong[0], longitude=latlong[1])
         except GeoEntry.DoesNotExist:
             # Maybe handle more gracefully?
             raise Exception('No zipcode matching query')
 
-        source_lat = GeoEntry.degrees_to_radians(zipcode.latitude)
-        source_long = GeoEntry.degrees_to_radians(zipcode.longitude)
+        source_lat = GeoEntry.degrees_to_radians(latlong[0])
+        source_long = GeoEntry.degrees_to_radians(latlong[1])
         distance = GeoEntry.miles_to_radians(radius)
 
         boundries = []
@@ -133,17 +129,17 @@ class GeoEntry(models.Model):
             boundries.append([GeoEntry.radians_to_degrees(target_lat), \
                 GeoEntry.radians_to_degrees(target_long)])
 
-        zipcodes = GeoEntry.objects.all().filter(latitude__lte=str(boundries[0][0]),
+        entries = GeoEntry.objects.all().filter(latitude__lte=str(boundries[0][0]),
             latitude__gte=str(boundries[2][0]), longitude__gte=str(boundries[1][1]),
             longitude__lte=str(boundries[3][1]))
 
-        code_data = list()
-        for code in zipcodes:
-            code_data.append(dict(zipcode=code.zipcode, \
+        entry_data = list()
+        for entry in entries:
+            entry_data.append(dict(zipcode=code.zipcode, \
                 distance=code.distance_to_latlong((zipcode.latitude, zipcode.longitude)))
             )
-        code_data.sort() # return orderd by distance
+        entry_data.sort() # return orderd by distance
         # now fix the bounding box SQL to limit within our radius
-        sorted_data = [elem for elem in code_data if elem['distance']<radius]
+        sorted_data = [elem for elem in entry_data if elem['distance']<radius]
         return sorted_data
 
