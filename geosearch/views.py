@@ -7,6 +7,7 @@ def get_params(request, var='POST'):
     data = getattr(request, var)
     latlong = None
     radius = None
+    fields = None
     try:
         latitude = data['latitude']
         longitude = data['longitude']
@@ -19,19 +20,25 @@ def get_params(request, var='POST'):
         radius = data['radius']
     except KeyError:
         pass
-    return [latlong, radius]
+    try:
+        fields = list(data['fields'].split(','))
+    except KeyError:
+        pass
+    return [latlong, radius, fields]
 
 
 
 def lookup(request):
     if request.POST:
-        lat_long, radius = get_params(request)
+        lat_long, radius, fields = get_params(request)
     elif request.GET:
-        lat_long, radius = get_params(request, 'GET')
+        lat_long, radius, fields = get_params(request, 'GET')
     else:
         return HttpResponse(json.dumps({'error': 'BadRequest'}))
 
-    if lat_long and radius:
+    if lat_long and radius and fields:
+        z = GeoEntry.within_radius(lat_long, radius, fields)
+    elif lat_long and radius:
         z = GeoEntry.within_radius(lat_long, radius)
     elif lat_long:
         z = GeoEntry.within_radius(lat_long)

@@ -82,7 +82,7 @@ class GeoEntry(models.Model):
             + math.pi) % (2*math.pi)) - math.pi
 
     @staticmethod
-    def within_radius(latlong, radius=5.0, ctype_fields=['name',]):
+    def within_radius(latlong, radius=5.0, ctype_fields=None):
         """ Takes an input latlong & desired radius, works out the square
         (not circular) boundry box for it and returns the object id's
         which fall within it. The method itself is outlined here:
@@ -135,7 +135,7 @@ class GeoEntry(models.Model):
         entry_data = list()
         for entry in entries:
             obj = entry.content_object
-            if obj:
+            if obj and ctype_fields:
                 ctype_dict = dict([[field, getattr(obj, field)] for field in ctype_fields])
             else:
                 ctype_dict = dict(object_id=entry.object_id, content_type=entry.content_type.name)
