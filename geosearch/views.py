@@ -5,26 +5,38 @@ import json
 
 def get_params(request, var='POST'):
     data = getattr(request, var)
+    latlong = None
+    radius = None
     try:
         latitude = data['latitude']
         longitude = data['longitude']
-        return [Decimal(latitude), Decimal(longitude)]
+        latlong = [Decimal(latitude), Decimal(longitude)]
     except KeyError:
-        return None
+        pass
     except decimal.InvalidOperation:
-        return None
+        pass
+    try:
+        radius = data['radius']
+    except KeyError:
+        pass
+    return [latlong, radius]
 
 
 
 def lookup(request):
     if request.POST:
-        lat_long = get_params(request)
+        lat_long, radius = get_params(request)
     elif request.GET:
-        lat_long = get_params(request, 'GET')
+        lat_long, radius = get_params(request, 'GET')
     else:
         return HttpResponse(json.dumps({'error': 'BadRequest'}))
-    if lat_long:
-        z = GeoEntry.within_radius(lat_long, radius=500)
-        return HttpResponse(json.dumps(z, sort_keys=False, indent=4))
+
+    if lat_long and radius:
+        z = GeoEntry.within_radius(lat_long, radius)
+    elif lat_long:
+        z = GeoEntry.within_radius(lat_long)
     else:
         return HttpResponse(json.dumps({'error': 'NoRequest'}))
+
+    return HttpResponse(json.dumps(z, sort_keys=False, indent=4))
+
