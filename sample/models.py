@@ -9,6 +9,6 @@ class City(models.Model):
         ('fr', 'France'),
         ('ie', 'Ireland'),
     )
-    name = models.CharField()
-    country = models.CharField(choices=COUNTRIES)
+    name = models.CharField(max_length=100)
+    country = models.CharField(choices=COUNTRIES, max_length=2)
 
