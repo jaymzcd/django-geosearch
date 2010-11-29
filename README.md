@@ -17,15 +17,19 @@ JSON formatted like this:
     [
         {
             "distance": 0.0,
-            "object_data": {
-                "name": "London"
-            }
+            "object_data": [
+                null
+            ],
+            "object_id": 1,
+            "content_type": 10
         },
         {
             "distance": 342.1842550215147,
-            "object_data": {
-                "name": "Glasgow"
-            }
+            "object_data": [
+                null
+            ],
+            "object_id": 2,
+            "content_type": 10
         }
     ]
 
@@ -41,16 +45,21 @@ Would return:
             "object_data": {
                 "pk": 1,
                 "name": "London"
-            }
+            },
+            "object_id": 1,
+            "content_type": 10
         },
         {
             "distance": 342.1842550215147,
             "object_data": {
                 "pk": 2,
                 "name": "Glasgow"
-            }
+            },
+            "object_id": 2,
+            "content_type": 10
         }
     ]
 
 For that to work the fields must be a callable (via getattr) on the content_object
 model.
+

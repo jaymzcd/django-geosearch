@@ -135,12 +135,13 @@ class GeoEntry(models.Model):
         entry_data = list()
         for entry in entries:
             obj = entry.content_object
+            ctype_dict = None,
             if obj and ctype_fields:
                 ctype_dict = dict([[field, getattr(obj, field)] for field in ctype_fields])
-            else:
-                ctype_dict = dict(object_id=entry.object_id, content_type=entry.content_type.name)
             entry_data.append(dict(
                     distance=entry.distance_to_latlong((latlong[0], latlong[1])),
+                    content_type=entry.content_type.pk,
+                    object_id=entry.object_id,
                     object_data=ctype_dict,
                 )
             )
