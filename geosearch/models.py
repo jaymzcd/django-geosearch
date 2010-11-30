@@ -119,6 +119,9 @@ class GeoEntry(models.Model):
         except GeoEntry.DoesNotExist:
             # Maybe handle more gracefully?
             raise Exception('No GeoEntry matching query')
+        except GeoEntry.MultipleObjectsReturned:
+            # In this case lets use the first one instead for now
+            geoentry = GeoEntry.objects.filter(latitude=latlong[0], longitude=latlong[1])[0]
 
         source_lat = GeoEntry.degrees_to_radians(latlong[0])
         source_long = GeoEntry.degrees_to_radians(latlong[1])
