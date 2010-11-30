@@ -109,6 +109,8 @@ class GeoEntry(models.Model):
         array is ideally suited as being returned as JSON.
         """
 
+        radius = float(radius) # may come through as str
+
         # These are our 4 points (N/S/E/W) We use this to build a bounding box
         HEADINGS = enumerate([0, math.pi/2, math.pi, 3*math.pi/2])
 
