@@ -136,7 +136,7 @@ class GeoEntry(models.Model):
             boundries.append([GeoEntry.radians_to_degrees(target_lat), \
                 GeoEntry.radians_to_degrees(target_long)])
 
-        entries = GeoEntry.objects.all().filter(latitude__lte=str(boundries[0][0]),
+        entries = GeoEntry.objects.all().select_related().filter(latitude__lte=str(boundries[0][0]),
             latitude__gte=str(boundries[2][0]), longitude__gte=str(boundries[1][1]),
             longitude__lte=str(boundries[3][1]))
 
@@ -146,7 +146,7 @@ class GeoEntry(models.Model):
             ctype_dict = None,
             if obj and ctype_fields:
                 if (len(ctype_fields)==1 and ctype_fields[0]=='all'):
-                    ctype_dict = dict([[field.name, getattr(obj, field.name)] for field in obj._meta.fields])
+                    ctype_dict = dict([[field.name, str(getattr(obj, field.name))] for field in obj._meta.fields])
                 else:
                     ctype_dict = dict([[field, getattr(obj, field)] for field in ctype_fields])
             entry_data.append(dict(
