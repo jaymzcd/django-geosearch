@@ -154,6 +154,8 @@ class GeoEntry(models.Model):
                     content_type=entry.content_type.pk,
                     object_id=entry.object_id,
                     object_data=ctype_dict,
+                    latitude=str(entry.latitude),
+                    longitude=str(entry.longitude),
                 )
             )
         entry_data.sort() # return orderd by distance
