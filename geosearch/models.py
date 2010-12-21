@@ -146,7 +146,14 @@ class GeoEntry(models.Model):
             ctype_dict = None,
             if obj and ctype_fields:
                 if (len(ctype_fields)==1 and ctype_fields[0]=='all'):
-                    ctype_dict = dict([[field.name, str(getattr(obj, field.name))] for field in obj._meta.fields])
+                    for field in obj._meta.fields:
+                        ctype_list = list()
+                        field_data = getattr(obj, field.name)
+                        if type(field_data) == unicode:
+                            ctype_list.append([field.name, field_data.encode('utf-8')])
+                        else:
+                            ctype_list.append([field.name, str(field_data)])
+                    ctype_dict = dict(ctype_list)
                 else:
                     ctype_dict = dict([[field, getattr(obj, field)] for field in ctype_fields])
             entry_data.append(dict(
