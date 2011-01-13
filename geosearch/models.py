@@ -23,7 +23,7 @@ class GeoEntry(models.Model):
     @property
     def lat_long(self):
         return '(%s, %s)' % (self.latitude, self.longitude)
-    
+
     def __unicode__(self):
         return self.lat_long
 
@@ -111,6 +111,9 @@ class GeoEntry(models.Model):
 
         radius = float(radius) # may come through as str
 
+        if type(latlong) == GeoEntry:
+            latlong = [latlong.latitude, latlong.longitude]
+
         # These are our 4 points (N/S/E/W) We use this to build a bounding box
         HEADINGS = enumerate([0, math.pi/2, math.pi, 3*math.pi/2])
 
@@ -170,3 +173,34 @@ class GeoEntry(models.Model):
         sorted_data = [elem for elem in entry_data if elem['distance']<radius]
         return sorted_data
 
+class GeoModel(models.Model):
+    """ Abstract to inherit off for models which want to have easy access
+    to the GeoEntrys they are associated with and provide some helper
+    methods for common cases """
+
+    geocodes = generic.GenericRelation(GeoEntry)
+
+    @property
+    def primary_geocode(self):
+        """ Returns the first GeoEntry for this item """
+        try:
+            return self.geocodes.all()[0]
+        except IndexError:
+            return None
+
+    def within_radius(self, radius=5.0):
+        """ Calls the GeoEntry.within_radius method with the primary geocode
+        for this item """
+
+        return GeoEntry.within_radius(self.primary_geocode, radius, ['all',])
+
+    class Meta:
+        abstract = True
+
+
+# Here's an example Class you could use in tandem with the GeoEntry
+class PostalCode(GeoModel):
+    """ This is a sample model but useful. You can find US and Canadian db's
+    at http://www.populardata.com/downloads.html for loading in."""
+
+    postcode = models.CharField(max_length=10)
